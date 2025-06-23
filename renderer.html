@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trello Task Manager</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #ffffff;
+        width: 500px;
+        height: 600px;
+        overflow: hidden;
+        border-radius: 12px;
+        position: relative;
+      }
+
+      .container {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        backdrop-filter: blur(20px);
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .header {
+        padding: 20px;
+        text-align: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .header h1 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+      }
+
+      .header p {
+        opacity: 0.8;
+        font-size: 0.9rem;
+      }
+
+      .content {
+        flex: 1;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .task-view {
+        text-align: center;
+        width: 100%;
+      }
+
+      .task-card {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+      }
+
+      .task-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      }
+
+      .task-list {
+        font-size: 0.8rem;
+        opacity: 0.8;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .task-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 12px;
+        line-height: 1.4;
+      }
+
+      .task-description {
+        font-size: 0.9rem;
+        opacity: 0.9;
+        margin-bottom: 16px;
+        line-height: 1.5;
+      }
+
+      .task-labels {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 16px;
+        justify-content: center;
+      }
+
+      .label {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 4px 8px;
+        border-radius: 16px;
+        font-size: 0.7rem;
+        font-weight: 500;
+      }
+
+      .task-due {
+        font-size: 0.8rem;
+        opacity: 0.8;
+        margin-bottom: 16px;
+      }
+
+      .task-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+      }
+
+      .btn {
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      .btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-1px);
+      }
+
+      .btn-primary {
+        background: rgba(76, 175, 80, 0.8);
+        border-color: rgba(76, 175, 80, 1);
+      }
+
+      .btn-primary:hover {
+        background: rgba(76, 175, 80, 1);
+      }
+
+      .settings-view {
+        width: 100%;
+        display: none;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        font-size: 0.9rem;
+      }
+
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        font-size: 0.9rem;
+      }
+
+      .form-group input::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .form-group select option {
+        background: #333;
+        color: white;
+      }
+
+      .checkbox-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 150px;
+        overflow-y: auto;
+        padding: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .checkbox-item input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+      }
+
+      .checkbox-item label {
+        flex: 1;
+        margin: 0;
+        font-size: 0.8rem;
+      }
+
+      .settings-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 20px;
+      }
+
+      .error-view {
+        text-align: center;
+        color: #ff6b6b;
+        display: none;
+      }
+
+      .error-icon {
+        font-size: 3rem;
+        margin-bottom: 16px;
+      }
+
+      .loading {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top: 3px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .auth-required {
+        text-align: center;
+        display: none;
+      }
+
+      .auth-icon {
+        font-size: 3rem;
+        margin-bottom: 16px;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .status-indicator {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #4caf50;
+      }
+
+      .status-indicator.disconnected {
+        background: #f44336;
+      }
+
+      .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 1.2rem;
+        cursor: pointer;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+      }
+
+      .close-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="status-indicator" id="statusIndicator"></div>
+      <button class="close-btn" id="closeBtn">×</button>
+
+      <div class="header">
+        <h1>Trello Task Manager</h1>
+        <p>What's Next?</p>
+      </div>
+
+      <div class="content">
+        <!-- Task View -->
+        <div class="task-view" id="taskView">
+          <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Loading your next task...</p>
+          </div>
+
+          <div class="task-card" id="taskCard" style="display: none">
+            <div class="task-list" id="taskList"></div>
+            <div class="task-title" id="taskTitle"></div>
+            <div class="task-description" id="taskDescription"></div>
+            <div class="task-labels" id="taskLabels"></div>
+            <div class="task-due" id="taskDue"></div>
+            <div class="task-actions">
+              <a
+                href="#"
+                class="btn btn-primary"
+                id="openTaskBtn"
+                target="_blank"
+                >Open in Trello</a
+              >
+              <button class="btn" id="refreshBtn">Refresh</button>
+              <button class="btn" id="settingsBtn">Settings</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings View -->
+        <div class="settings-view" id="settingsView">
+          <div class="form-group">
+            <label>Authentication Status</label>
+            <div
+              id="authStatus"
+              style="
+                padding: 12px;
+                border-radius: 8px;
+                background: rgba(255, 255, 255, 0.1);
+                text-align: center;
+              "
+            >
+              <span id="authStatusText">Not authenticated</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <button
+              class="btn btn-primary"
+              id="authenticateBtn"
+              style="width: 100%"
+            >
+              Authenticate with Trello
+            </button>
+          </div>
+
+          <div class="form-group">
+            <label for="boardSelect">Select Board</label>
+            <select id="boardSelect">
+              <option value="">Choose a board...</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Select Lists (Priority Order)</label>
+            <div class="checkbox-group" id="listsContainer">
+              <p style="text-align: center; opacity: 0.6">
+                Select a board first
+              </p>
+            </div>
+          </div>
+
+          <div class="settings-actions">
+            <button class="btn btn-primary" id="saveSettingsBtn">
+              Save Settings
+            </button>
+            <button class="btn" id="backToTaskBtn">Back to Tasks</button>
+            <button class="btn" id="logoutBtn">Logout</button>
+          </div>
+        </div>
+
+        <!-- Error View -->
+        <div class="error-view" id="errorView">
+          <div class="error-icon">⚠️</div>
+          <h3>Oops!</h3>
+          <p id="errorMessage">Something went wrong</p>
+          <div style="margin-top: 20px">
+            <button class="btn" id="retryBtn">Try Again</button>
+            <button class="btn" id="settingsFromErrorBtn">Settings</button>
+          </div>
+        </div>
+
+        <!-- Auth Required View -->
+        <div class="auth-required" id="authRequiredView">
+          <div class="auth-icon">🔐</div>
+          <h3>Authentication Required</h3>
+          <p>Please authenticate with Trello to view your tasks</p>
+          <div style="margin-top: 20px">
+            <button class="btn btn-primary" id="authFromMainBtn">
+              Authenticate
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const { ipcRenderer } = require("electron");
+      const marked = require("marked");
+
+      class TrelloTaskManagerUI {
+        constructor() {
+          this.currentView = "task";
+          this.config = null;
+          this.boards = [];
+          this.lists = [];
+          this.initializeEventListeners();
+          this.init();
+        }
+
+        async init() {
+          this.config = await ipcRenderer.invoke("get-config");
+          if (this.config && this.config.isAuthenticated) {
+            // Optionally, show the task view and refresh tasks
+            this.showTaskView();
+            this.refreshTask();
+          } else {
+            this.showSettings();
+          }
+        }
+
+        initializeEventListeners() {
+          // Close button
+          document.getElementById("closeBtn").addEventListener("click", () => {
+            window.close();
+          });
+
+          // Navigation buttons
+          document
+            .getElementById("settingsBtn")
+            .addEventListener("click", () => {
+              this.showSettings();
+            });
+
+          document
+            .getElementById("backToTaskBtn")
+            .addEventListener("click", () => {
+              this.showTaskView();
+              this.refreshTask();
+            });
+
+          document
+            .getElementById("refreshBtn")
+            .addEventListener("click", () => {
+              this.refreshTask();
+            });
+
+          // Settings buttons
+          document
+            .getElementById("authenticateBtn")
+            .addEventListener("click", () => {
+              this.authenticate();
+            });
+
+          document
+            .getElementById("authFromMainBtn")
+            .addEventListener("click", () => {
+              this.authenticate();
+            });
+
+          document
+            .getElementById("saveSettingsBtn")
+            .addEventListener("click", () => {
+              this.saveSettings();
+            });
+
+          document.getElementById("logoutBtn").addEventListener("click", () => {
+            this.logout();
+          });
+
+          // Board selection
+          document
+            .getElementById("boardSelect")
+            .addEventListener("change", (e) => {
+              this.loadLists(e.target.value);
+            });
+
+          // Error view buttons
+          document.getElementById("retryBtn").addEventListener("click", () => {
+            this.showTaskView();
+            this.refreshTask();
+          });
+
+          document
+            .getElementById("settingsFromErrorBtn")
+            .addEventListener("click", () => {
+              this.showSettings();
+            });
+
+          // IPC listeners
+          ipcRenderer.on("show-task", (event, task) => {
+            this.displayTask(task);
+          });
+
+          ipcRenderer.on("show-settings", (event, config) => {
+            this.config = config;
+            this.showSettings();
+          });
+
+          ipcRenderer.on("show-error", (event, message) => {
+            this.showError(message);
+          });
+
+          ipcRenderer.on("oauth-success", () => {
+            this.onAuthSuccess();
+          });
+        }
+
+        showTaskView() {
+          this.hideAllViews();
+          document.getElementById("taskView").style.display = "block";
+          this.currentView = "task";
+        }
+
+        async showSettings() {
+          this.hideAllViews();
+          document.getElementById("settingsView").style.display = "block";
+          this.currentView = "settings";
+          this.loadSettings();
+          await loadBoards();
+        }
+
+        async loadBoards() {
+          try {
+            this.boards = await ipcRenderer.invoke("get-boards");
+            // Update the board select dropdown here
+            this.updateBoardSelect();
+          } catch (error) {
+            this.showError("Failed to fetch boards: " + error.message);
+          }
+        }
+
+        updateBoardSelect() {
+          // Update the board select dropdown in the DOM
+          const boardSelect = document.getElementById("boardSelect");
+          if (!boardSelect) return;
+          boardSelect.innerHTML = '<option value="">Choose a board...</option>';
+          for (const board of this.boards) {
+            const option = document.createElement("option");
+            option.value = board.id;
+            option.textContent = board.name;
+            boardSelect.appendChild(option);
+          }
+          // Optionally, set the selected value from config
+          if (this.config && this.config.boardId) {
+            boardSelect.value = this.config.boardId;
+          }
+        }
+
+        showError(message) {
+          this.hideAllViews();
+          document.getElementById("errorView").style.display = "block";
+          document.getElementById("errorMessage").textContent = message;
+          this.currentView = "error";
+        }
+
+        showAuthRequired() {
+          this.hideAllViews();
+          document.getElementById("authRequiredView").style.display = "block";
+          this.currentView = "auth";
+        }
+
+        hideAllViews() {
+          document.getElementById("taskView").style.display = "none";
+          document.getElementById("settingsView").style.display = "none";
+          document.getElementById("errorView").style.display = "none";
+          document.getElementById("authRequiredView").style.display = "none";
+          document.getElementById("loading").style.display = "none";
+          document.getElementById("taskCard").style.display = "none";
+        }
+
+        displayTask(task) {
+          this.showTaskView();
+
+          document.getElementById("loading").style.display = "none";
+          document.getElementById("taskCard").style.display = "block";
+
+          document.getElementById("taskList").textContent = task.listName;
+          document.getElementById("taskTitle").textContent = task.name;
+          document.getElementById("taskDescription").innerHTML = marked.parse(
+            task.description || ""
+          );
+
+          // Labels
+          const labelsContainer = document.getElementById("taskLabels");
+          labelsContainer.innerHTML = "";
+          if (task.labels && task.labels.length > 0) {
+            task.labels.forEach((label) => {
+              const labelEl = document.createElement("span");
+              labelEl.className = "label";
+              labelEl.textContent = label.name || "Label";
+              labelEl.style.backgroundColor =
+                label.color || "rgba(255, 255, 255, 0.2)";
+              labelsContainer.appendChild(labelEl);
+            });
+          }
+
+          // Due date
+          const dueEl = document.getElementById("taskDue");
+          if (task.due) {
+            const dueDate = new Date(task.due);
+            dueEl.textContent = `Due: ${dueDate.toLocaleDateString()} ${dueDate.toLocaleTimeString()}`;
+            dueEl.style.display = "block";
+          } else {
+            dueEl.style.display = "none";
+          }
+
+          // Open button
+          const openBtn = document.getElementById("openTaskBtn");
+          if (task.url) {
+            openBtn.href = task.url;
+            openBtn.style.display = "inline-block";
+          } else {
+            openBtn.style.display = "none";
+          }
+
+          // Update status indicator
+          document.getElementById("statusIndicator").className =
+            "status-indicator";
+        }
+
+        async loadSettings() {
+          if (!this.config) return;
+
+          // Update auth status
+          const authStatusText = document.getElementById("authStatusText");
+          const authStatus = document.getElementById("authStatus");
+
+          if (this.config.isAuthenticated) {
+            authStatusText.textContent = "Authenticated ✓";
+            authStatus.style.background = "rgba(76, 175, 80, 0.3)";
+            authStatus.style.border = "1px solid rgba(76, 175, 80, 0.5)";
+
+            // Load boards
+            await this.loadBoards();
+          } else {
+            authStatusText.textContent = "Not authenticated";
+            authStatus.style.background = "rgba(244, 67, 54, 0.3)";
+            authStatus.style.border = "1px solid rgba(244, 67, 54, 0.5)";
+          }
+
+          // Set board selection
+          document.getElementById("boardSelect").value =
+            this.config.boardId || "";
+
+          // Load lists if board is selected
+          if (this.config.boardId) {
+            await this.loadLists(this.config.boardId);
+          }
+        }
+
+        async loadBoards() {
+          try {
+            this.boards = await ipcRenderer.invoke("get-boards");
+            const boardSelect = document.getElementById("boardSelect");
+
+            // Clear existing options
+            boardSelect.innerHTML =
+              '<option value="">Choose a board...</option>';
+
+            // Add boards
+            this.boards.forEach((board) => {
+              const option = document.createElement("option");
+              option.value = board.id;
+              option.textContent = board.name;
+              boardSelect.appendChild(option);
+            });
+          } catch (error) {
+            console.error("Error loading boards:", error);
+          }
+        }
+
+        async loadLists(boardId) {
+          if (!boardId) {
+            document.getElementById("listsContainer").innerHTML =
+              '<p style="text-align: center; opacity: 0.6;">Select a board first</p>';
+            return;
+          }
+
+          try {
+            this.lists = await ipcRenderer.invoke("get-lists", boardId);
+            const listsContainer = document.getElementById("listsContainer");
+
+            // Clear existing content
+            listsContainer.innerHTML = "";
+
+            if (this.lists.length === 0) {
+              listsContainer.innerHTML =
+                '<p style="text-align: center; opacity: 0.6;">No lists found</p>';
+              return;
+            }
+
+            // Add lists as checkboxes
+            this.lists.forEach((list) => {
+              const checkboxItem = document.createElement("div");
+              checkboxItem.className = "checkbox-item";
+
+              const checkbox = document.createElement("input");
+              checkbox.type = "checkbox";
+              checkbox.id = `list-${list.id}`;
+              checkbox.value = list.id;
+              checkbox.checked = this.config.listIds.includes(list.id);
+
+              const label = document.createElement("label");
+              label.htmlFor = `list-${list.id}`;
+              label.textContent = list.name;
+
+              checkboxItem.appendChild(checkbox);
+              checkboxItem.appendChild(label);
+              listsContainer.appendChild(checkboxItem);
+            });
+          } catch (error) {
+            console.error("Error loading lists:", error);
+            document.getElementById("listsContainer").innerHTML =
+              '<p style="text-align: center; color: #ff6b6b;">Error loading lists</p>';
+          }
+        }
+
+        async authenticate() {
+          try {
+            const result = await ipcRenderer.invoke("start-oauth");
+            if (!result.success) {
+              this.showError(result.error || "Authentication failed");
+            }
+          } catch (error) {
+            this.showError("Authentication failed: " + error.message);
+          }
+        }
+
+        async onAuthSuccess() {
+          // Fetch the latest config from the main process
+          this.config = await window.ipcRenderer.invoke("get-config");
+          await this.loadSettings();
+
+          // Show success message briefly
+          const authStatusText = document.getElementById("authStatusText");
+          const originalText = authStatusText.textContent;
+          authStatusText.textContent = "Authentication successful! ✓";
+
+          setTimeout(() => {
+            authStatusText.textContent = originalText;
+          }, 2000);
+        }
+
+        async saveSettings() {
+          const boardId = document.getElementById("boardSelect").value;
+          const selectedLists = [];
+
+          // Get selected lists
+          const checkboxes = document.querySelectorAll(
+            '#listsContainer input[type="checkbox"]:checked'
+          );
+          checkboxes.forEach((checkbox) => {
+            selectedLists.push(checkbox.value);
+          });
+
+          const newConfig = {
+            boardId: boardId,
+            listIds: selectedLists,
+          };
+
+          try {
+            await ipcRenderer.invoke("save-config", newConfig);
+            this.config = { ...this.config, ...newConfig };
+
+            // Show success feedback
+            const saveBtn = document.getElementById("saveSettingsBtn");
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = "Saved! ✓";
+            saveBtn.style.background = "rgba(76, 175, 80, 1)";
+
+            setTimeout(() => {
+              saveBtn.textContent = originalText;
+              saveBtn.style.background = "rgba(76, 175, 80, 0.8)";
+            }, 2000);
+          } catch (error) {
+            this.showError("Failed to save settings: " + error.message);
+          }
+        }
+
+        async logout() {
+          try {
+            await ipcRenderer.invoke("logout");
+            // Fetch the latest config from the main process
+            this.config = await ipcRenderer.invoke("get-config");
+            // Clear UI
+            document.getElementById("boardSelect").innerHTML =
+              '<option value="">Choose a board...</option>';
+            document.getElementById("listsContainer").innerHTML =
+              '<p style="text-align: center; opacity: 0.6;">Select a board first</p>';
+            // Update auth status
+            await this.loadSettings();
+          } catch (error) {
+            this.showError("Logout failed: " + error.message);
+          }
+        }
+
+        refreshTask() {
+          ipcRenderer.invoke("refresh-task");
+
+          document.getElementById("loading").style.display = "flex";
+          document.getElementById("taskCard").style.display = "none";
+
+          // Trigger refresh via tray (this will call back to show-task)
+          setTimeout(() => {
+            if (document.getElementById("loading").style.display === "flex") {
+              // If still loading after 5 seconds, show error
+              this.showError("Task refresh timed out. Please try again.");
+            }
+          }, 5000);
+        }
+      }
+
+      // Initialize the UI when the page loads
+      const ui = new TrelloTaskManagerUI();
+
+      ipcRenderer.on("force-refresh-task", () => {
+        ui.refreshTask();
+      });
+    </script>
+  </body>
+</html>
