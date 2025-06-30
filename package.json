@@ -1,6 +1,6 @@
 {
   "name": "trello-task-manager",
-  "version": "1.1.0",
+  "version": "1.0.0",
   "description": "A system tray app to quickly check your next Trello task",
   "main": "index.js",
   "scripts": {
@@ -10,7 +10,9 @@
     "build-mac": "electron-builder --mac",
     "build-linux": "electron-builder --linux",
     "dist": "npm run build",
-    "dev": "nodemon --exec electron . --ext js,html"
+    "dev": "nodemon --exec electron . --ext js,html",
+    "clean": "rimraf dist",
+    "prebuild": "npm run clean"
   },
   "keywords": [
     "trello",
