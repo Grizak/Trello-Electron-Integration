@@ -4,10 +4,7 @@ const {
   BrowserWindow,
   Tray,
   Menu,
-  nativeImage,
   ipcMain,
-  dialog,
-  shell,
   globalShortcut,
 } = require("electron");
 const path = require("path");
@@ -16,6 +13,7 @@ const axios = require("axios");
 const crypto = require("crypto");
 const { URL } = require("url");
 const os = require("os");
+const { initializeAutoUpdater } = require("./AutoUpdater");
 
 // Your Trello App credentials - replace these with your actual values
 const TRELLO_APP_KEY = "15fe0c1c225786c3f1200698035f4571"; // Get from https://trello.com/app-key
@@ -618,6 +616,11 @@ app.whenReady().then(() => {
   app.setLoginItemSettings({
     openAtLogin: true,
     path: process.execPath,
+  });
+
+  const updater = initializeAutoUpdater({
+    autoDownload: true,
+    autoInstall: false,
   });
 });
 

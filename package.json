@@ -1,6 +1,6 @@
 {
   "name": "trello-task-manager",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A system tray app to quickly check your next Trello task",
   "main": "index.js",
   "scripts": {
@@ -31,7 +31,8 @@
     "files": [
       "index.js",
       "renderer.html",
-      "package.json"
+      "package.json",
+      "AutoUpdater.js"
     ],
     "win": {
       "target": "nsis",
